@@ -450,9 +450,10 @@ fn make_command(make_cmd: &str, build_dir: &Path, num_jobs: &str) -> Command {
         (Ok(f), Err(_)) | (Err(_), Ok(f)) => Some(f),
         _ => None
     };
-    let already_parallel = if let Some(f) = makeflags {
+    let already_parallel = if let Some(ref f) = makeflags {
         cmd.env("MAKEFLAGS", &f);
-        f.contains("-j") // Matches both -j and --jobserver-*.
+        let (options, _) = parse_makeflags(f);
+        options.iter().any(|opt| opt.starts_with("-j") || opt.starts_with("--jobserver"))
     } else {
         false
     };
